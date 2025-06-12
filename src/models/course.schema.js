@@ -9,6 +9,7 @@ const courseSchema = new Schema({
     level: {type: String, enum: ["beginner", "intermediate", "advance"], required: true},
     instructorId: {type: mongoose.Schema.Types.ObjectId, ref: "user"},
     thumbnail: {type: String, required: true},
+    status: { type: String, enum: ["draft", "published"], default: "draft"},
     createdAt: {type: String}
 })
 

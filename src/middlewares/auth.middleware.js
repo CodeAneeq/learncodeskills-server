@@ -1,4 +1,7 @@
 import Constants from "../constant.js";
+import jwt from "jsonwebtoken";
+import { userModel } from "../models/user.schema.js";
+
 
 let authMiddleware = async (req, res, next) => {
 try {
