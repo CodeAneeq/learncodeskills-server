@@ -6,8 +6,8 @@ const addCourse = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({status: "failed", message: "thumbnail is required"});
         }
-        let {title, category, subTitle, description, price, level, status} = req.body;
-        if (!title || !category || !subTitle || !description || !price || !level) {
+        let {title, category, subTitle, description, price, level, status, language} = req.body;
+        if (!title || !category || !subTitle || !description || !price || !level || !language) {
             return res.status(400).json({status: "failed", message: "all fields are required"});
         }
         let date = new Date(Date.now()); 
@@ -19,6 +19,7 @@ const addCourse = async (req, res) => {
             price,
             level,
             status,
+            language,
             instructorId: instructor._id,
             thumbnail: req.file.path,
             createdAt: date
@@ -74,4 +75,73 @@ const deleteCourse = async (req, res) => {
     }
 }
 
-export { addCourse, getAllCourses, getInstructorCourses, deleteCourse }
+const searchCourse = async (req, res) => {
+    try {
+        let searchQuery = req.query.search;
+        if (!searchQuery) {
+            return res.status(404).json({status: "failed", message: "Query is missing"});
+        }
+        let courses = await courseModel.find({$or: [
+            {title: {$regex: searchQuery, $options: 'i'}},
+            {subTitle: {$regex: searchQuery, $options: 'i'}},
+            {description: {$regex: searchQuery, $options: 'i'}},
+            {category: {$regex: searchQuery, $options: 'i'}},
+        ]});
+        if (courses.length === 0) {
+            return res.status(404).json({status: "failed", message: "NO course found"});
+        }
+        res.status(200).json({status: "success", message: "Course fetch successfully based on query", data: courses});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({status: "failed", message: "Internal Server Error"});
+    }
+}
+
+const filterCourse = async (req, res) => {
+  try {
+    let { category, level, language } = req.body;
+    let filter = {};
+
+    if (category) {
+      filter.category = { $regex: `^${category}$`, $options: "i" };
+    }
+
+    if (level) {
+      filter.level = { $regex: `^${level}$`, $options: "i" };
+    }
+
+    if (language) {
+      filter.language = { $regex: `^${language}$`, $options: "i" };
+    }
+
+    let courses = await courseModel.find(filter);
+
+    if (courses.length === 0) {
+      return res.status(404).json({ status: "failed", message: "no job found" });
+    }
+
+    res.status(200).json({ status: "success", message: "Jobs filtered successfully", data: courses });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "failed", message: "Internal Server Error" });
+  }
+};
+
+const getCourseById = async (req, res) => {
+    try {
+        let id = req.params.id;
+        if (!id) {
+            return res.status(400).json({status: "Failed", message: "id not found"});
+        }
+       let course = await courseModel.findById(id);
+       if (!course) {
+        return res.status(400).json({status: "failed", message: "Course not found"})
+       }
+       res.status(201).json({status: "Success", message: "Course fetch successfully", data: course});
+    } catch (error) {
+         console.log(error);
+        res.status(500).json({status: "Failed", message: "Internal Server Error"});
+    }
+}
+
+export { addCourse, getAllCourses, getInstructorCourses, deleteCourse, searchCourse, filterCourse, getCourseById }

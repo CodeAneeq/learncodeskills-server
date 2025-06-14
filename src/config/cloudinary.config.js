@@ -13,9 +13,17 @@ cloudinaryV2.config({
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinaryV2,
-    params: {
-        folder: 'learnCodeSkills',
-        allowedFormats: ['jpg', 'png', 'jpeg'],
+    params: async (req, file) => {
+        let resourceType = 'image';
+        if (file.mimetype.startsWith('video/')) {
+            resourceType = 'video';
+        }
+
+        return {
+            folder: 'learnCodeSkills',
+            resourceType: resourceType,
+            allowedFormats: ['jpg', 'png', 'jpeg', 'mp4', 'mov'],
+        }
     }
 });
 

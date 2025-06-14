@@ -6,4 +6,9 @@ const upload = multer({
     limits: { fileSize: 1024 * 1024 * 2}
 })
 
-export default upload
+const uploadVideo = multer({
+    storage,
+    limits: { fileSize: 1024 * 1024 * 50 } // 50MB
+});
+
+export {upload, uploadVideo}
